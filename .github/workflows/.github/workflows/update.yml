@@ -3,23 +3,26 @@ on:
   workflow_dispatch: {}
   schedule:
     - cron: "0 */6 * * *"   # every 6 hours
+
 jobs:
-  run:
+  update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
       - run: npm init -y
-      - run: npm i node-fetch@3
+      - run: npm install node-fetch@3
       - run: node fetchLimiteds.js
-      - name: Commit JSON
+      - name: Commit limiteds.json
         run: |
-          if [[ `git status --porcelain` ]]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "auto update limiteds"
-            git push
-          fi
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "update limiteds.json" || echo "no changes"
+          git push
